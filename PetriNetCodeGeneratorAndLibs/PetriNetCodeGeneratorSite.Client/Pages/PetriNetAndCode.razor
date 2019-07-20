@@ -1,0 +1,64 @@
+@page "/petrinet-and-code"
+
+<h3>PetriNetAndCode</h3>
+
+<div class="container">
+    <div class="row">
+        <div class="col-6">
+            <img class="img-fluid" src="/img/PetriNetExample.png" />
+        </div>
+        <div class="col-6">
+            <pre>
+                <code class="lang-cshtml">
+                    pn.AddTransition(o => o.FillGameByEvents(),
+                    o =>
+                    o.State.HasFlag(CurrentGameState.ReadyFill),
+                    o =>
+                    o.State &= (~(CurrentGameState.ReadyFill)),
+                    o =>
+                    o.State |= CurrentGameState.Filled, ExecutionMode.Synch);
+
+                    pn.AddTransition(o => o.UpdateCurrentState(),
+                    o =>
+                    o.State.HasFlag(CurrentGameState.PassCheckNeedToBeStarted | CurrentGameState.RedyGetTime) && !o.State.HasFlag(CurrentGameState.Started),
+                    o =>
+                    o.State &= (~(CurrentGameState.PassCheckNeedToBeStarted | CurrentGameState.RedyGetTime)),
+                    o =>
+                    o.State |= CurrentGameState.ReadyFill | CurrentGameState.ReadySendResult, ExecutionMode.Synch);
+
+                    pn.AddTransition(o => o.Exchange(),
+                    o =>
+                    o.State.HasFlag(CurrentGameState.NeedTryExchange | CurrentGameState.ReadyCheckForExchange | CurrentGameState.GotBetId) &&
+                    !o.State.HasFlag(CurrentGameState.PassExchange) &&
+                    !o.State.HasFlag(CurrentGameState.NeedToBeStarted) &&
+                    !o.State.HasFlag(CurrentGameState.Started) &&
+                    !o.State.HasFlag(CurrentGameState.Elapsed)
+                    ,
+                    o =>
+                    o.State &= (~(CurrentGameState.ReadyCheckForExchange)),
+                    o =>
+                    o.State |= CurrentGameState.PassExchange, ExecutionMode.Synch);
+
+                    pn.AddTransition(o => o.CheckNeedTryExchange(),
+                    o =>
+                    o.State.HasFlag(CurrentGameState.ReadyCheckNeedTryExchange),
+                    o =>
+                    o.State &= (~(CurrentGameState.ReadyCheckNeedTryExchange)),
+                    o => { }, ExecutionMode.Synch);
+
+                    pn.AddTransition(o => o.CheckNeedToBeStarted(),
+                    o =>
+                    o.State.HasFlag(CurrentGameState.ReadyNeedToBeStarted) && /*!o.State.HasFlag(CurrentGameState.Elapsed) && */!o.State.HasFlag(CurrentGameState.Started),
+                    o =>
+                    o.State &= (~(CurrentGameState.ReadyNeedToBeStarted)),
+                    o =>
+                    o.State |= CurrentGameState.PassCheckNeedToBeStarted | CurrentGameState.ReadyCheckForExchange, ExecutionMode.Synch);
+                </code>
+            </pre>
+        </div>
+    </div>
+</div>
+
+@code {
+    int x = 1;
+}
