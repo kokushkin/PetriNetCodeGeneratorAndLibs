@@ -1,64 +1,105 @@
 @page "/petrinet-and-code"
+@inject IJSRuntime JsRuntime;
 
 <h3>PetriNetAndCode</h3>
 
-<div class="container">
+<div class="container-fluid">
     <div class="row">
         <div class="col-6">
             <img class="img-fluid" src="/img/PetriNetExample.png" />
         </div>
         <div class="col-6">
-            <pre>
-                <code class="lang-cshtml">
-                    pn.AddTransition(o => o.FillGameByEvents(),
-                    o =>
-                    o.State.HasFlag(CurrentGameState.ReadyFill),
-                    o =>
-                    o.State &= (~(CurrentGameState.ReadyFill)),
-                    o =>
-                    o.State |= CurrentGameState.Filled, ExecutionMode.Synch);
+            <div class="container">
+                <div class="row mb-5">
+                    <h4 class="mr-2">Choose your language to generate a code!</h4>
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        <label class="btn btn-success">
+                            <input type="radio" name="options" id="option1" autocomplete="off"> C#
+                        </label>
+                        <label class="btn btn-success">
+                            <input type="radio" name="options" id="option2" autocomplete="off"> TypeScript
+                        </label>
+                        <label class="btn btn-success">
+                            <input type="radio" name="options" id="option3" autocomplete="off"> Python
+                        </label>
+                    </div>
+                </div>
+                <div class="row mb-5">
+                    <textarea id="editor" cols="120" rows="250">
+pn.AddTransition(o => o.FillGameByEvents(),
+o =>
+o.State.HasFlag(CurrentGameState.ReadyFill),
+o =>
+o.State &= (~(CurrentGameState.ReadyFill)),
+o =>
+o.State |= CurrentGameState.Filled, ExecutionMode.Synch);
 
-                    pn.AddTransition(o => o.UpdateCurrentState(),
-                    o =>
-                    o.State.HasFlag(CurrentGameState.PassCheckNeedToBeStarted | CurrentGameState.RedyGetTime) && !o.State.HasFlag(CurrentGameState.Started),
-                    o =>
-                    o.State &= (~(CurrentGameState.PassCheckNeedToBeStarted | CurrentGameState.RedyGetTime)),
-                    o =>
-                    o.State |= CurrentGameState.ReadyFill | CurrentGameState.ReadySendResult, ExecutionMode.Synch);
+pn.AddTransition(o => o.UpdateCurrentState(),
+o =>
+o.State.HasFlag(CurrentGameState.PassCheckNeedToBeStarted | CurrentGameState.RedyGetTime) && !o.State.HasFlag(CurrentGameState.Started),
+o =>
+o.State &= (~(CurrentGameState.PassCheckNeedToBeStarted | CurrentGameState.RedyGetTime)),
+o =>
+o.State |= CurrentGameState.ReadyFill | CurrentGameState.ReadySendResult, ExecutionMode.Synch);
 
-                    pn.AddTransition(o => o.Exchange(),
-                    o =>
-                    o.State.HasFlag(CurrentGameState.NeedTryExchange | CurrentGameState.ReadyCheckForExchange | CurrentGameState.GotBetId) &&
-                    !o.State.HasFlag(CurrentGameState.PassExchange) &&
-                    !o.State.HasFlag(CurrentGameState.NeedToBeStarted) &&
-                    !o.State.HasFlag(CurrentGameState.Started) &&
-                    !o.State.HasFlag(CurrentGameState.Elapsed)
-                    ,
-                    o =>
-                    o.State &= (~(CurrentGameState.ReadyCheckForExchange)),
-                    o =>
-                    o.State |= CurrentGameState.PassExchange, ExecutionMode.Synch);
+pn.AddTransition(o => o.Exchange(),
+o =>
+o.State.HasFlag(CurrentGameState.NeedTryExchange | CurrentGameState.ReadyCheckForExchange | CurrentGameState.GotBetId) &&
+!o.State.HasFlag(CurrentGameState.PassExchange) &&
+!o.State.HasFlag(CurrentGameState.NeedToBeStarted) &&
+!o.State.HasFlag(CurrentGameState.Started) &&
+!o.State.HasFlag(CurrentGameState.Elapsed)
+,
+o =>
+o.State &= (~(CurrentGameState.ReadyCheckForExchange)),
+o =>
+o.State |= CurrentGameState.PassExchange, ExecutionMode.Synch);
 
-                    pn.AddTransition(o => o.CheckNeedTryExchange(),
-                    o =>
-                    o.State.HasFlag(CurrentGameState.ReadyCheckNeedTryExchange),
-                    o =>
-                    o.State &= (~(CurrentGameState.ReadyCheckNeedTryExchange)),
-                    o => { }, ExecutionMode.Synch);
+pn.AddTransition(o => o.CheckNeedTryExchange(),
+o =>
+o.State.HasFlag(CurrentGameState.ReadyCheckNeedTryExchange),
+o =>
+o.State &= (~(CurrentGameState.ReadyCheckNeedTryExchange)),
+o => { }, ExecutionMode.Synch);
 
-                    pn.AddTransition(o => o.CheckNeedToBeStarted(),
-                    o =>
-                    o.State.HasFlag(CurrentGameState.ReadyNeedToBeStarted) && /*!o.State.HasFlag(CurrentGameState.Elapsed) && */!o.State.HasFlag(CurrentGameState.Started),
-                    o =>
-                    o.State &= (~(CurrentGameState.ReadyNeedToBeStarted)),
-                    o =>
-                    o.State |= CurrentGameState.PassCheckNeedToBeStarted | CurrentGameState.ReadyCheckForExchange, ExecutionMode.Synch);
-                </code>
-            </pre>
+pn.AddTransition(o => o.CheckNeedToBeStarted(),
+o =>
+o.State.HasFlag(CurrentGameState.ReadyNeedToBeStarted) && /*!o.State.HasFlag(CurrentGameState.Elapsed) && */!o.State.HasFlag(CurrentGameState.Started),
+o =>
+o.State &= (~(CurrentGameState.ReadyNeedToBeStarted)),
+o =>
+o.State |= CurrentGameState.PassCheckNeedToBeStarted | CurrentGameState.ReadyCheckForExchange, ExecutionMode.Synch);
+
+
+							</textarea>
+
+                </div>
+                <div class="row mb-5">
+                    <div class=" container-fluid ">
+                        <button type="button" class="btn btn-warning btn-lg float-right">Regenerate Petri Net By Code</button>
+                    </div>
+                </div>
+
+            </div>
+
         </div>
     </div>
+
 </div>
 
+
+
+
+
 @code {
-    int x = 1;
+
+    protected override async Task OnAfterRenderAsync()
+    {
+        await SetupCodeEditorAsync();
+    }
+
+    private async Task SetupCodeEditorAsync()
+    {
+        await JsRuntime.InvokeAsync<string>("SetupCodeEditor");
+    }
 }
